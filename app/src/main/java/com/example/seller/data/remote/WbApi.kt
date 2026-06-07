@@ -17,7 +17,7 @@ interface WbApi {
     ): Response<DeliveryDatesResponse>
 
     @POST("api/v3/dbs/groups/info")
-    suspend fun getGroupsInfo(
+    suspend fun getGroupInfo(
         @Header("Authorization") token: String,
         @Body body: Map<String, List<String>>
     ): Response<List<GroupInfoDto>>
