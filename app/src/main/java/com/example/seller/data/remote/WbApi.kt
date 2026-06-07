@@ -10,12 +10,11 @@ interface WbApi {
         @Header("Authorization") token: String
     ): Response<WbOrdersResponse>
 
-    @POST("api/v3/{type}/orders/delivery-date")
+    @POST("api/v3/dbs/orders/delivery-date")
     suspend fun getDeliveryDates(
-        @Path("type") type: String,
         @Header("Authorization") token: String,
-        @Body body: Map<String, List<Long>>
-    ): Response<DeliveryDateResponse>
+        @Body body: WbDeliveryRequest
+    ): Response<DeliveryDatesResponse>
 
     @POST("api/v3/dbs/groups/info")
     suspend fun getGroupsInfo(
