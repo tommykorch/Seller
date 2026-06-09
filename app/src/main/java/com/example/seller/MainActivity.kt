@@ -18,7 +18,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // DI
         val db = AppDatabase.getDatabase(this)
         val api = RetrofitClient.wbApi
         val repository = OrderRepository(api, db.appDao())
@@ -28,10 +27,18 @@ class MainActivity : ComponentActivity() {
         val getOrdersUseCase = GetOrdersByStatusUseCase(repository)
         val moveOrderUseCase = MoveOrderUseCase(repository)
         val fetchAllUseCase = FetchAllOrdersUseCase(repository, getShopsUseCase)
+        val deleteShopUseCase = DeleteShopUseCase(repository)
+
+        val syncArchiveUseCase = SyncArchiveUseCase(repository)
 
         // ViewModels
-        val ordersViewModel = OrdersViewModel(fetchAllUseCase, getOrdersUseCase, moveOrderUseCase)
-        val shopsViewModel = ShopsViewModel(repository)
+        val ordersViewModel = OrdersViewModel(
+            fetchAllUseCase,
+            getOrdersUseCase,
+            moveOrderUseCase,
+            syncArchiveUseCase,
+        )
+        val shopsViewModel = ShopsViewModel(repository,deleteShopUseCase )
 
         setContent {
             SellerTheme {
@@ -41,7 +48,11 @@ class MainActivity : ComponentActivity() {
                     composable("orders") {
                         OrdersScreen(
                             viewModel = ordersViewModel,
-                            onNavigateToShops = { navController.navigate("shops") }
+                            isArchive = false,
+                            onNavigateToShops = { navController.navigate("shops") },
+                            onSwitchTab = { isArchive ->
+                                if (isArchive) navController.navigate("archive") else navController.navigate("orders")
+                            }
                         )
                     }
                     // Экран архива
@@ -49,7 +60,10 @@ class MainActivity : ComponentActivity() {
                         OrdersScreen(
                             viewModel = ordersViewModel,
                             isArchive = true,
-                            onNavigateToShops = { navController.navigate("shops") }
+                            onNavigateToShops = { navController.navigate("shops") },
+                            onSwitchTab = { isArchive ->
+                                if (isArchive) navController.navigate("archive") else navController.navigate("orders")
+                            }
                         )
                     }
                     // Экран магазинов

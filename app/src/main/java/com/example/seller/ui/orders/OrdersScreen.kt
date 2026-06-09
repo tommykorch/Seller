@@ -3,6 +3,8 @@ package com.example.seller.ui.orders
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,10 +19,12 @@ import com.example.seller.data.local.OrderEntity
 fun OrdersScreen(
     viewModel: OrdersViewModel,
     isArchive: Boolean = false,
-    onNavigateToShops: () -> Unit
+    onNavigateToShops: () -> Unit,
+    onSwitchTab: (Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // Автоматическое переключение данных при смене вкладки
     LaunchedEffect(isArchive) {
         if (isArchive) {
             viewModel.handleIntent(OrdersIntent.LoadArchive)
@@ -31,16 +35,30 @@ fun OrdersScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(if (isArchive) "Архив сборки" else "Новые заказы")
-                },
-                actions = {
-                    TextButton(onClick = onNavigateToShops) {
-                        Text("Магазины", color = MaterialTheme.colorScheme.primary)
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(if (isArchive) "Архив заказов" else "Новые заказы")
+                    },
+                    actions = {
+                        TextButton(onClick = onNavigateToShops) {
+                            Text("Магазины", color = MaterialTheme.colorScheme.primary)
+                        }
                     }
+                )
+                TabRow(selectedTabIndex = if (isArchive) 1 else 0) {
+                    Tab(
+                        selected = !isArchive,
+                        onClick = { onSwitchTab(false) },
+                        text = { Text("Новые") }
+                    )
+                    Tab(
+                        selected = isArchive,
+                        onClick = { onSwitchTab(true) },
+                        text = { Text("Архив") }
+                    )
                 }
-            )
+            }
         }
     ) { padding ->
         Box(
@@ -48,21 +66,6 @@ fun OrdersScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            // Индикатор загрузки по центру экрана
-            if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-
-            // Сообщение, если заказов нет
-            if (state.orders.isEmpty() && !state.isLoading) {
-                Text(
-                    text = "Заказов не найдено",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-
-            // Список заказов
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(8.dp)
@@ -78,10 +81,21 @@ fun OrdersScreen(
                     )
                 }
             }
+
+            if (state.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+
+            if (state.orders.isEmpty() && !state.isLoading) {
+                Text(
+                    text = if (isArchive) "В архиве пока пусто" else "Новых заказов нет",
+                    modifier = Modifier.align(Alignment.Center),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
         }
     }
 }
-
 @Composable
 fun OrderCard(order: OrderEntity, onAssemble: () -> Unit, showButton: Boolean,showArchiveInfo: Boolean) {
     Card(
@@ -95,26 +109,19 @@ fun OrderCard(order: OrderEntity, onAssemble: () -> Unit, showButton: Boolean,sh
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                if (showArchiveInfo) { // если isArchive == true
+                /*if (showArchiveInfo) { // если isArchive == true
+
                     Text(
-                        text = "Продавец: ${StatusMapper.mapSupplier(order.supplierStatus)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        text = "WB: ${StatusMapper.mapWb(order.wbStatus)}",
+                        text = "Статус: ${StatusMapper.mapWb(order.wbStatus)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.tertiary
                     )
-                }
+                }*/
+
                 Text(
                     text = "${order.shopName}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "Статус: ${order.status}",
-                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = "Создан: ${order.createdAt}",
@@ -124,19 +131,38 @@ fun OrderCard(order: OrderEntity, onAssemble: () -> Unit, showButton: Boolean,sh
                     text = "Артикул: ${order.article}",
                     style = MaterialTheme.typography.titleMedium
                 )
-                Text(
-                    text = "Цена: ${order.salePrice} ₽",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Доставка: ${order.deliveryDate ?: "—"}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-               /* Text(
-                    text = "Цена доставки: ${order.deliveryCost} ₽",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
-                )*/
+                if (!showArchiveInfo){
+                    Text(
+                        text = "Цена: ${order.salePrice} ₽",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Дата доставки: ${order.deliveryDate ?: "—"}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = "Цена доставки: ${order.deliveryCost} ₽",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                if (!order.fullAddress.isNullOrBlank()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = order.fullAddress,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
                 if (!order.comment.isNullOrBlank()) {
                     Text(
                         text = "${order.comment}",

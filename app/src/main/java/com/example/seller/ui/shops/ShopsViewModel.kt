@@ -6,12 +6,21 @@ import com.example.seller.data.local.ShopEntity
 import com.example.seller.data.repository.OrderRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.example.seller.domain.usecase.DeleteShopUseCase
 
-class ShopsViewModel(private val repository: OrderRepository) : ViewModel() {
+class ShopsViewModel(private val repository: OrderRepository,private val deleteShopUseCase: DeleteShopUseCase) : ViewModel() {
 
     private val _state = MutableStateFlow(ShopsState())
     val state = _state.asStateFlow()
-
+    fun deleteShop(shop: ShopEntity) {
+        viewModelScope.launch {
+            try {
+                deleteShopUseCase(shop.id, shop.name)
+            } catch (e: Exception) {
+                // Обработка ошибки
+            }
+        }
+    }
     fun handleIntent(intent: ShopsIntent) {
         when (intent) {
             is ShopsIntent.LoadShops -> {
