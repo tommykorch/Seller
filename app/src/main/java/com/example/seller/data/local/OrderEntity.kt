@@ -8,8 +8,11 @@ data class OrderEntity(
     val nmId: String,
     val article: String,
     val salePrice: Double,
+    val deliveryCost: Double = 0.0,
     val comment: String?,
     val createdAt: String,
     val deliveryDate: String?,
-    val status: String // "NEW", "ASSEMBLY", "ARCHIVE"
+    val status: String,
+    val supplierStatus: String? = null,
+    val wbStatus: String? = null
 )

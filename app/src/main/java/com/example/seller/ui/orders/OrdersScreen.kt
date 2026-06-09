@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.seller.StatusMapper
 import com.example.seller.data.local.OrderEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +73,8 @@ fun OrdersScreen(
                         onAssemble = {
                             viewModel.handleIntent(OrdersIntent.SendToAssembly(order.id))
                         },
-                        showButton = !isArchive // В архиве кнопку "В сборку" не показываем
+                        showButton = !isArchive,
+                        showArchiveInfo = isArchive
                     )
                 }
             }
@@ -81,7 +83,7 @@ fun OrdersScreen(
 }
 
 @Composable
-fun OrderCard(order: OrderEntity, onAssemble: () -> Unit, showButton: Boolean) {
+fun OrderCard(order: OrderEntity, onAssemble: () -> Unit, showButton: Boolean,showArchiveInfo: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -93,10 +95,26 @@ fun OrderCard(order: OrderEntity, onAssemble: () -> Unit, showButton: Boolean) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
+                if (showArchiveInfo) { // если isArchive == true
+                    Text(
+                        text = "Продавец: ${StatusMapper.mapSupplier(order.supplierStatus)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Text(
+                        text = "WB: ${StatusMapper.mapWb(order.wbStatus)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
                 Text(
                     text = "${order.shopName}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "Статус: ${order.status}",
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = "Создан: ${order.createdAt}",

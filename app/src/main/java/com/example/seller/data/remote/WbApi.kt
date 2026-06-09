@@ -19,6 +19,22 @@ interface WbApi {
     @POST("api/v3/dbs/groups/info")
     suspend fun getGroupInfo(
         @Header("Authorization") token: String,
-        @Body body: Map<String, List<String>>
+        @Body body: WbGroupRequest
     ): Response<List<GroupInfoDto>>
+    @POST("api/v3/dbs/orders/status") // проверьте правильность пути
+    suspend fun getOrdersStatusInfo(
+        @Header("Authorization") token: String,
+        @Body body: WbStatusRequest // Используем конкретный класс вместо Map
+    ): Response<WbStatusResponse>
+
+    @GET("api/v3/dbs/orders")
+    suspend fun getOrdersByPeriod(
+        @Query("type") type: String,
+        @Header("Authorization") token: String,
+        @Query("dateFrom") dateFrom: Long,
+        @Query("dateTo") dateTo: Long,
+        @Query("limit") limit: Int = 1000,
+        @Query("next") next: Int = 0
+    ): Response<WbOrdersResponse>
+
 }
