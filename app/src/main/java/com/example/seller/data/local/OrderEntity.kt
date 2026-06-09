@@ -1,9 +1,19 @@
 package com.example.seller.data.local
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-@Entity(tableName = "orders")
+@Entity(tableName = "orders",
+    foreignKeys = [
+        ForeignKey(
+            entity = ShopEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["shopId"],
+            onDelete = ForeignKey.CASCADE
+        )
+])
 data class OrderEntity(
     @PrimaryKey val id: Long,
+    val shopId: Int,
     val shopName: String,
     val nmId: String,
     val article: String,
@@ -14,5 +24,6 @@ data class OrderEntity(
     val deliveryDate: String?,
     val status: String,
     val supplierStatus: String? = null,
-    val wbStatus: String? = null
+    val wbStatus: String? = null,
+    val fullAddress: String?
 )

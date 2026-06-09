@@ -14,4 +14,5 @@ sealed class OrdersIntent {
     object LoadNew : OrdersIntent()           // Загрузить новые заказы
     object LoadArchive : OrdersIntent()       // Загрузить архив
     data class SendToAssembly(val id: Long) : OrdersIntent() // Кнопка "В сборку"
+
 }
