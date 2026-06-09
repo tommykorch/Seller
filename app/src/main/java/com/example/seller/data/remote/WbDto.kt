@@ -9,7 +9,8 @@ data class WbOrderDto(
     val article: String,
     val salePrice: Double,
     val createdAt: String,
-    val comment: String?
+    val comment: String?,
+    val address: WbAddressDto?,
 )
 data class WbStatusResponse(
     val orders: List<OrderStatusDto>
@@ -28,4 +29,9 @@ data class WbGroupRequest(
 )
 data class WbStatusRequest(
     val ordersIds: List<Long>
+)
+data class WbAddressDto(
+    val fullAddress: String? = null,
+    val longitude: Double? = null,
+    val latitude: Double? = null
 )
