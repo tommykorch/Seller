@@ -34,14 +34,12 @@ class OrderRepository(
             isoString
         }
     }
-    // --- РАБОТА С МАГАЗИНАМИ ---
     fun getShops(): Flow<List<ShopEntity>> = dao.getAllShops()
 
     suspend fun saveShop(shop: ShopEntity) = dao.insertShop(shop)
 
     suspend fun deleteShop(id: Int) = dao.deleteShop(id)
 
-    // --- РАБОТА С ЗАКАЗАМИ ---
     fun getOrders(status: String): Flow<List<OrderEntity>> = dao.getOrdersByStatus(status)
 
     suspend fun updateStatus(orderId: Long, status: String) = dao.updateOrderStatus(orderId, status)
@@ -49,7 +47,6 @@ class OrderRepository(
 
     suspend fun syncAllShopsArchive(dateFrom: Long, dateTo: Long) {
         try {
-            // 1. Получаем список всех зарегистрированных магазинов
             val shops = dao.getAllShops().first()
 
             shops.forEach { shop ->
@@ -66,7 +63,6 @@ class OrderRepository(
                         return@forEach
                     }
 
-                    // 3. Получаем статусы для этих заказов (чтобы видеть "Отменено", "Доставлено" и т.д.)
                     val ids = wbOrders.map { it.id }
                     val statusRequest = WbStatusRequest(ordersIds = ids)
                     val statusResponse = api.getOrdersStatusInfo(shop.token, statusRequest)
@@ -144,7 +140,6 @@ class OrderRepository(
 
             // Включаем расчет стоимости доставки и для новых заказов
             val groupIds = wbOrders.map { it.groupId }.distinct()
-            //val groupResponse = api.getGroupInfo(shop.token, mapOf("groups" to groupIds))
             val groupRequest = WbGroupRequest(groups = groupIds)
             val groupResponse = api.getGroupInfo(shop.token, groupRequest)
             val deliveryCostMap = if (groupResponse.isSuccessful) {
